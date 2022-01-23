@@ -41,28 +41,28 @@
       <module name="go-qrcode" />
       <working_directory value="$PROJECT_DIR$" />
       <kind value="FILE" />
-      <filePath value="$PROJECT_DIR$/qrcode/main.go" />
       <package value="github.com/skip2/go-qrcode" />
       <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/qrcode/main.go" />
       <method v="2" />
     </configuration>
     <configuration name="go build qrcode.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="go-qrcode" />
       <working_directory value="$PROJECT_DIR$" />
       <kind value="FILE" />
-      <filePath value="$PROJECT_DIR$/qrcode.go" />
       <package value="github.com/skip2/go-qrcode" />
       <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/qrcode.go" />
       <method v="2" />
     </configuration>
     <configuration name="qrcode_decode_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="go-qrcode" />
       <working_directory value="$PROJECT_DIR$" />
-      <framework value="gotest" />
       <kind value="FILE" />
       <package value="github.com/skip2/go-qrcode" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$/qrcode_decode_test.go" />
+      <framework value="gotest" />
       <method v="2" />
     </configuration>
     <recent_temporary>
