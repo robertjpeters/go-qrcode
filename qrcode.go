@@ -54,7 +54,6 @@ import (
 	"fmt"
 	"github.com/tdewolff/canvas/eps"
 	"github.com/tdewolff/canvas/pdf"
-	"github.com/tdewolff/canvas/rasterizer"
 	"github.com/tdewolff/canvas/svg"
 	"image"
 	"image/color"
@@ -340,36 +339,52 @@ func (q *QRCode) Image(size int) image.Image {
 // Canvas returns the QR Code as an image.Image.
 //
 // Based on Image
-func (q *QRCode) Canvas() *canvas.Canvas {
+func (q *QRCode) Canvas(size int, foregroundColor color.Color, backgroundColor color.Color) *canvas.Canvas {
 	// Build QR code.
 	q.encode()
 
 	// Minimum pixels (both width and height) required.
-	size := q.symbol.size
+	realSize := q.symbol.size
 
+	// Variable size support.
+	if size < 0 {
+		size = size * -1 * realSize
+	}
+
+	// Actual pixels available to draw the symbol. Automatically increase the
+	// image size if it's not large enough.
+	if size < realSize {
+		size = realSize
+	}
+
+	// Construct a canvas
 	c := canvas.New(float64(size), float64(size))
 	ctx := canvas.NewContext(c)
-	ctx.SetFillColor(canvas.Yellow)
+	ctx.SetFillColor(backgroundColor)
 	ctx.DrawPath(float64(0), float64(0), canvas.Rectangle(float64(size), float64(size)))
 
 	// Saves a few bytes to have them in this order
-	ctx.SetFillColor(canvas.Darkblue)
+	ctx.SetFillColor(foregroundColor)
 
 	// QR code bitmap.
-	bitmap := q.symbol.bitmap()
+	bitmap := q.Bitmap()
 
-	// Map each image pixel to the nearest QR code module.
+	modulesPerPixel := float64(realSize) / float64(size)
 	for y := 0; y < size; y++ {
+		y2 := int(float64(y) * modulesPerPixel)
 		for x := 0; x < size; x++ {
-			v := bitmap[y][x]
+			x2 := int(float64(x) * modulesPerPixel)
+
+			v := bitmap[y2][x2]
+
 			if v {
 				ctx.DrawPath(float64(x), float64(y), canvas.Rectangle(float64(1), float64(1)))
 			}
 		}
 	}
+
 	return c
 }
-
 
 // PNG returns the QR Code as a PNG image.
 //
@@ -396,21 +411,42 @@ func (q *QRCode) PNG(size int) ([]byte, error) {
 // size is both the image width and height in pixels. If size is too small then
 // a larger image is silently returned. Negative values for size cause a
 // variable sized image to be returned: See the documentation for Image().
-func (q *QRCode) SVG() (string, error) {
-	c := q.Canvas()
-	// import "bytes"
+func (q *QRCode) SVG(file string, size int, foregroundColor color.Color, backgroundColor color.Color) (string, error) {
+	c := q.Canvas(size, foregroundColor, backgroundColor)
 	buf := new(bytes.Buffer)
 	w := svg.Writer
-
-	w(buf,c)
-	// for debug
-	 c.WriteFile("qrcode_out.svg", svg.Writer)
-	 c.WriteFile("qrcode_out.pdf", pdf.Writer)
-	 c.WriteFile("qrcode_out.eps", eps.Writer)
-	 c.WriteFile("qrcode_out.png", rasterizer.PNGWriter(3.2))
+	w(buf, c)
+	c.WriteFile(file+".svg", svg.Writer)
 	return buf.String(), nil
 }
 
+// SVG returns the QR Code as a SVG image.
+//
+// size is both the image width and height in pixels. If size is too small then
+// a larger image is silently returned. Negative values for size cause a
+// variable sized image to be returned: See the documentation for Image().
+func (q *QRCode) EPS(file string, size int, foregroundColor color.Color, backgroundColor color.Color) (string, error) {
+	c := q.Canvas(size, foregroundColor, backgroundColor)
+	buf := new(bytes.Buffer)
+	w := svg.Writer
+	w(buf, c)
+	c.WriteFile(file+".eps", eps.Writer)
+	return buf.String(), nil
+}
+
+// SVG returns the QR Code as a SVG image.
+//
+// size is both the image width and height in pixels. If size is too small then
+// a larger image is silently returned. Negative values for size cause a
+// variable sized image to be returned: See the documentation for Image().
+func (q *QRCode) PDF(file string, size int, foregroundColor color.Color, backgroundColor color.Color) (string, error) {
+	c := q.Canvas(size, foregroundColor, backgroundColor)
+	buf := new(bytes.Buffer)
+	w := svg.Writer
+	w(buf, c)
+	c.WriteFile(file+".pdf", pdf.Writer)
+	return buf.String(), nil
+}
 
 // Write writes the QR Code as a PNG image to io.Writer.
 //
